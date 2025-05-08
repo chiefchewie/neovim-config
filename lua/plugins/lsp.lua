@@ -33,6 +33,8 @@ return {
 			lspconfig.lua_ls.setup {}
 			lspconfig.rust_analyzer.setup {}
 			lspconfig.basedpyright.setup {}
+			lspconfig.cssls.setup {}
+			lspconfig.cssmodules_ls.setup {}
 		end,
 	}
 }
