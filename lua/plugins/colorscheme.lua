@@ -1,5 +1,4 @@
 return {
-	-- "folke/tokyonight.nvim",
 	'catppuccin/nvim',
 	name = 'catppuccin',
 	lazy = false,
