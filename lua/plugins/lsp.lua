@@ -1,6 +1,6 @@
 return {
   {
-    -- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
+    -- lazydev configures Lua LSP for your Neovim config, runtime and plugins
     -- used for completion, annotations and signatures of Neovim apis
     'folke/lazydev.nvim',
     ft = 'lua',
@@ -24,13 +24,14 @@ return {
       -- Useful status updates for LSP.
       -- { 'j-hui/fidget.nvim', opts = {} },
     },
+    event = { "BufReadPre", "BufNewFile" },
     config = function()
-      local lspconfig = require('lspconfig')
-      lspconfig.lua_ls.setup {}
-      lspconfig.rust_analyzer.setup {}
-      lspconfig.basedpyright.setup {}
-      lspconfig.cssls.setup {}
-      lspconfig.cssmodules_ls.setup {}
+      -- local lspconfig = require('lspconfig')
+      -- lspconfig.lua_ls.setup {}
+      -- lspconfig.rust_analyzer.setup {}
+      -- lspconfig.basedpyright.setup {}
+      -- lspconfig.cssls.setup {}
+      -- lspconfig.cssmodules_ls.setup {}
     end,
   }
 }
