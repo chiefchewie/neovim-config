@@ -1,3 +1,4 @@
 return {
-  'shortcuts/no-neck-pain.nvim'
+  'shortcuts/no-neck-pain.nvim',
+  event = { "BufReadPre", "BufNewFile" }
 }
