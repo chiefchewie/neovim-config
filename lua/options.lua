@@ -67,3 +67,8 @@ vim.opt.cursorline = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
+
+-- providers
+vim.g.python3_host_prog = "~/.venvs/neovim/bin/python3"
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_ruby_provider = 0
