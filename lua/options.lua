@@ -69,6 +69,6 @@ vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 
 -- providers
-vim.g.python3_host_prog = "~/.venvs/neovim/bin/python3"
+vim.g.python3_host_prog = "~/neovim-envs/nvim-python/bin/python3"
 vim.g.loaded_perl_provider = 0
 vim.g.loaded_ruby_provider = 0
