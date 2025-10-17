@@ -16,5 +16,6 @@ return {
       },
       indent = { enable = false },
     })
-  end
+  end,
+  cond = (function() return not vim.g.vscode end)
 }

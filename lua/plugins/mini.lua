@@ -12,6 +12,8 @@ return
 
     -- appearance
     require('mini.icons').setup()
-    require('mini.statusline').setup()
+    if not vim.g.vscode then
+      require('mini.statusline').setup()
+    end
   end
 }
