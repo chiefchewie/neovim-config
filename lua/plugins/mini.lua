@@ -12,11 +12,9 @@ return
     -- general
     require('mini.git').setup()
     require('mini.diff').setup()
-    require('mini.sessions').setup()
 
     -- appearance
     require('mini.icons').setup()
-    require('mini.starter').setup()
     require('mini.statusline').setup()
   end
 }
