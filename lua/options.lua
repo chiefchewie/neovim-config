@@ -1,6 +1,9 @@
 -- See `:help vim.opt`
--- NOTE: You can change these options as you wish!
---  For more options, you can see `:help option-list`
+-- For more options, you can see `:help option-list`
+
+vim.g.mapleader = ' '
+vim.g.maplocalleader = ' '
+vim.g.have_nerd_font = true
 
 -- Make line numbers default
 vim.opt.number = true
@@ -19,14 +22,6 @@ vim.opt.shiftwidth = 4
 vim.opt.expandtab = true
 vim.opt.autoindent = true
 vim.opt.smartindent = true
-
--- Sync clipboard between OS and Neovim.
---  Schedule the setting after `UiEnter` because it can increase startup-time.
---  Remove this option if you want your OS clipboard to remain independent.
---  See `:help 'clipboard'`
--- vim.schedule(function()
---   vim.opt.clipboard = 'unnamedplus'
--- end)
 
 -- Enable break indent
 vim.opt.breakindent = true
@@ -66,7 +61,7 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
--- providers
+-- Providers
 vim.g.python3_host_prog = "~/neovim-envs/nvim-python/bin/python3"
 vim.g.loaded_perl_provider = 0
 vim.g.loaded_ruby_provider = 0
