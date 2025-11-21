@@ -2,7 +2,7 @@
 my neovim config
 
 Python environment set-up:
-
-- make folder `~/neovim-envs/`
-- make virtual environment `~/neovim-envs/nvim-python/`
-- activate the environment and `pip install neovim`
+- make folder: `mkdir ~/neovim-envs/`
+- make virtual environment `uv venv nvim-python --seed`
+- activate the environment `source nvim-python/bin/activate`
+- install `pip install neovim`
