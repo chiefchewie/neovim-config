@@ -18,19 +18,23 @@ return
     -- appearance
     require('mini.icons').setup()
     require('mini.statusline').setup()
-  end,
-  keys = {
-    { "<leader>ff", function() MiniPick.builtin.files() end,                            desc = "Find Files" },
-    { "<leader>fb", function() MiniPick.builtin.buffers() end,                          desc = "Find Buffers" },
-    { "<leader>fg", function() MiniPick.builtin.grep_live() end,                        desc = "Live Grep" },
-    { "<leader>fG", function() MiniPick.builtin.grep({ pattern = '<cword>' }) end,      desc = "Find Grep" },
-    { "<leader>fd", function() MiniExtra.pickers.diagnostic({ scope = 'all' }) end,     desc = "Find Diagnostics (all)" },
-    { "<leader>fD", function() MiniExtra.pickers.diagnostic({ scope = 'current' }) end, desc = "Find Diagnostics (buf)" },
-    { "<leader>fm", function() MiniExtra.pickers.marks() end,                           desc = "Find Marks" },
-    { "<leader>fh", function() MiniPick.builtin.help() end,                             desc = "Find Help" },
 
-    { "<leader>/",  function() MiniExtra.pickers.history({ scope = '/' }) end,          desc = "'/' History" },
-    { "<leader>:",  function() MiniExtra.pickers.history({ scope = ':' }) end,          desc = "':' History" },
-    { "<leader>e",  function() MiniExtra.pickers.explorer() end,                        desc = "File Explorer" },
-  }
+    -- configure
+    local nmap_leader = function(suffix, rhs, desc)
+      vim.keymap.set('n', '<Leader>' .. suffix, rhs, { desc = desc })
+    end
+
+    nmap_leader('ff', '<Cmd>Pick files<CR>', 'Find Files')
+    nmap_leader('fb', '<Cmd>Pick buffers<CR>', 'Find Buffers')
+    nmap_leader('fg', '<Cmd>Pick grep_live<CR>', 'Live Grep')
+    nmap_leader('fG', '<Cmd>Pick grep pattern="<cword>"<CR>', 'Grep current word')
+    nmap_leader('fd', '<Cmd>Pick diagnostic scope="all"<CR>', 'Find Diagnostics (workspace)')
+    nmap_leader('fD', '<Cmd>Pick diagnostic scope="current"<CR>', 'Find Diagnostics (buffer)')
+    nmap_leader('fm', '<Cmd>Pick marks<CR>', 'Find Marks')
+    nmap_leader('fh', '<Cmd>Pick help<CR>', 'Find Help')
+
+    nmap_leader('/', '<Cmd>Pick history scope="/"<CR>', "'/' History")
+    nmap_leader(':', '<Cmd>Pick history scope=":"<CR>', "':' History")
+    nmap_leader('e', '<Cmd>Pick explorer<CR>', 'File Explorer')
+  end
 }
