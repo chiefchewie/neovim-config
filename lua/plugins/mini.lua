@@ -1,3 +1,17 @@
+local centered_window_config = function()
+  -- took this from :h MiniPick-examples
+  -- 0.618 is 1/phi, which is aesthetically pleasing or something
+  local height = math.floor(0.618 * vim.o.lines)
+  local width = math.floor(0.618 * vim.o.columns)
+  return {
+    anchor = 'NW',
+    height = height,
+    width = width,
+    row = math.floor(0.5 * (vim.o.lines - height)),
+    col = math.floor(0.5 * (vim.o.columns - width)),
+  }
+end
+
 return
 {
   'nvim-mini/mini.nvim',
@@ -12,14 +26,18 @@ return
     -- general
     require('mini.diff').setup()
     require('mini.git').setup()
-    require('mini.pick').setup()
+    require('mini.pick').setup({
+      window = {
+        config = centered_window_config
+      }
+    })
     require('mini.extra').setup()
 
     -- appearance
     require('mini.icons').setup()
     require('mini.statusline').setup()
 
-    -- configure
+    -- keymaps
     local nmap_leader = function(suffix, rhs, desc)
       vim.keymap.set('n', '<Leader>' .. suffix, rhs, { desc = desc })
     end
