@@ -31,6 +31,7 @@ return
         config = centered_window_config
       }
     })
+    require('mini.files').setup()
     require('mini.extra').setup()
 
     -- appearance
