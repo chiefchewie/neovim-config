@@ -22,8 +22,14 @@ vim.opt.shiftwidth = 4
 vim.opt.expandtab = true
 vim.opt.autoindent = true
 
--- Enable break indent
+-- Options related to wrap
+--  breakindent: broken lines inherit indent
+--  linebreak: only break lines at certain chars
+--  showbreak: visually show a space for broken lines
+vim.opt.wrap = true
 vim.opt.breakindent = true
+vim.opt.linebreak = true
+vim.opt.showbreak = ' '
 
 -- Save undo history
 vim.opt.undofile = true
@@ -50,6 +56,7 @@ vim.opt.splitbelow = true
 --  and `:help 'listchars'`
 vim.opt.list = true
 vim.opt.listchars = { trail = '·', nbsp = '␣' }
+
 
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = 'split'
