@@ -24,8 +24,13 @@ return
     require('mini.surround').setup()
 
     -- general
-    require('mini.diff').setup()
     require('mini.git').setup()
+    require('mini.diff').setup({
+      view = {
+        style = 'sign',
+        signs = { add = '+', change = '~', delete = '-' },
+      },
+    })
     require('mini.pick').setup({
       window = {
         config = centered_window_config
