@@ -1,10 +1,13 @@
 vim.lsp.enable({
   'lua_ls',
   'basedpyright',
+  'ruby_lsp',
+  'sorbet',
+  'clangd'
 })
 
 vim.api.nvim_create_autocmd('LspAttach', {
-  group = vim.api.nvim_create_augroup('my.lsp', {}),
+  group = vim.api.nvim_create_augroup('alan_lsp', {}),
   callback = function(args)
     local client = assert(vim.lsp.get_client_by_id(args.data.client_id))
     -- Auto-format ("lint") on save.

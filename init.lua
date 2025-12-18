@@ -1,9 +1,4 @@
-require 'options'
-require 'keymaps'
-require 'autocmds'
-require 'lsp'
-require 'project_shada'
-
+-- bootstrap lazy
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
   local lazyrepo = "https://github.com/folke/lazy.nvim.git"
@@ -20,9 +15,32 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+require 'options'
+require 'keymaps'
+require 'autocmds'
+require 'lsp'
+require 'project_shada'
+
+
+-- configure plugins
 require("lazy").setup({
   spec = {
     { import = "plugins" },
   },
-  checker = { enabled = true },
+  install = { missing = false },
+  change_detection = { enabled = false },
+  rocks = { enabled = false },
+  performance = {
+    rtp = {
+      disabled_plugins = {
+        'gzip',
+        'netrwPlugin',
+        'rplugin',
+        'tarPlugin',
+        'tohtml',
+        'tutor',
+        'zipPlugin',
+      },
+    },
+  },
 })
