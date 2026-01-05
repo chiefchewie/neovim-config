@@ -1,8 +1,6 @@
 vim.lsp.enable({
   'lua_ls',
   'basedpyright',
-  'ruby_lsp',
-  'sorbet',
   'clangd'
 })
 
