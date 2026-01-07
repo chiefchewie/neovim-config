@@ -1,3 +1,8 @@
+-- Don't auto-wrap comments and don't insert comment leader after hitting 'o'.
+-- Do on `FileType` to always override these changes from filetype plugins.
+local f = function() vim.cmd('setlocal formatoptions-=c formatoptions-=o') end
+_G.Config.new_autocmd('FileType', nil, f, "Proper 'formatoptions'")
+
 -- [[ Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -137,6 +142,7 @@ vim.api.nvim_create_autocmd({ "BufEnter", "FocusGained", "InsertLeave", "Cmdline
     end
   end,
 })
+
 vim.api.nvim_create_autocmd({ "BufLeave", "FocusLost", "InsertEnter", "CmdlineEnter", "WinLeave" }, {
   pattern = "*",
   group = numbertoggle,
