@@ -1,4 +1,4 @@
--- general
+-- [[ general ]]
 vim.g.have_nerd_font = true
 vim.g.mapleader      = ' '                              -- Use `<Space>` as <Leader> key
 vim.o.mouse          = 'a'                              -- Enable mouse
@@ -60,8 +60,10 @@ vim.g.loaded_perl_provider    = 0
 vim.g.loaded_python3_provider = 0
 vim.g.loaded_ruby_provider    = 0
 
+require("vim._extui").enable({})
 
--- keymaps
+
+-- [[ keymaps ]]
 local map = vim.keymap
 map.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
@@ -88,7 +90,7 @@ map.set({ 'n', 'x' }, '<leader>p', '"+p', { desc = 'Paste from system clipboard 
 map.set({ 'n', 'x' }, '<leader>P', '"+P', { desc = 'Paste from system clipboard before cursor' })
 
 
--- useful autocommands
+-- [[ generl autocommands ]]
 local augroup = function(name)
   return vim.api.nvim_create_augroup("custom_" .. name, { clear = true })
 end
@@ -191,7 +193,7 @@ autocmd({ "VimResized" }, {
 })
 
 
--- plugins
+-- [[ plugins ]]
 vim.pack.add({
   { src = "https://github.com/catppuccin/nvim",  name = "catpuccin" },
   "https://github.com/nvim-treesitter/nvim-treesitter",
@@ -200,7 +202,6 @@ vim.pack.add({
   { src = 'https://github.com/Saghen/blink.cmp', version = vim.version.range('*') }
 })
 
-require("vim._extui").enable({})
 
 require("catppuccin").setup {
   background = { light = "latte", dark = "macchiato" }
@@ -221,24 +222,4 @@ require("blink.cmp").setup {}
 -- lsp
 vim.lsp.enable({
   'lua_ls',
-  -- 'basedpyright',
-  -- 'clangd'
 })
-
--- vim.api.nvim_create_autocmd('LspAttach', {
---   group = vim.api.nvim_create_augroup('alan_lsp', {}),
---   callback = function(args)
---     local client = assert(vim.lsp.get_client_by_id(args.data.client_id))
---     -- Auto-format ("lint") on save.
---     -- Usually not needed if server supports "textDocument/willSaveWaitUntil".
---     if not client:supports_method('textDocument/willSaveWaitUntil') and client:supports_method('textDocument/formatting') then
---       vim.api.nvim_create_autocmd('BufWritePre', {
---         group = vim.api.nvim_create_augroup('my.lsp', { clear = false }),
---         buffer = args.buf,
---         callback = function()
---           vim.lsp.buf.format({ bufnr = args.buf, id = client.id, timeout_ms = 1000 })
---         end,
---       })
---     end
---   end,
--- })
