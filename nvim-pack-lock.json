@@ -2,7 +2,7 @@
   "plugins": {
     "blink.cmp": {
       "rev": "b19413d214068f316c78978b08264ed1c41830ec",
-      "src": "https://github.com/Saghen/blink.cmp",
+      "src": "https://github.com/saghen/blink.cmp",
       "version": ">=0.0.0"
     },
     "catpuccin": {
