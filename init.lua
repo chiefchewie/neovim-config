@@ -64,11 +64,18 @@ vim.keymap.set({ 'i', 's', 'n' }, '<esc>', function()
   return '<esc>'
 end, { desc = 'Escape, clear hlsearch, and stop snippets', expr = true })
 
--- open diagnostic
-vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+-- toggle diagnostic quickfix list
+vim.keymap.set('n', '<leader>q', function()
+  local loclist_winid = vim.fn.getloclist(0, { winid = 0 }).winid
+  if loclist_winid ~= 0 then
+    vim.cmd('lclose')
+  else
+    vim.diagnostic.setloclist()
+  end
+end, { desc = 'Toggle diagnostic [Q]uickfix list' })
 
--- quit terminal mode
-vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
+-- enter normal mode with <esc><esc> while in term mode
+vim.keymap.set('t', '<esc><esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
 -- see `:help wincmd` for a list of all window commands
 vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
@@ -115,7 +122,6 @@ autocmd({ "BufLeave", "FocusLost", "InsertEnter", "CmdlineEnter", "WinLeave" }, 
   callback = function()
     if vim.o.nu then
       vim.opt.relativenumber = false
-      vim.cmd "redraw"
     end
   end,
 })
@@ -129,7 +135,7 @@ autocmd("TextYankPost", {
 })
 
 -- a shada file per .git repo
-autocmd("VimEnter", {
+autocmd("BufReadPre", {
   group = augroup("project_shada"),
   callback = function()
     local data_dir = vim.fn.stdpath('data')
@@ -152,16 +158,62 @@ autocmd("VimEnter", {
   end
 })
 
+-- check if we need to reload the file when it changed
+autocmd({ "FocusGained", "TermClose", "TermLeave" }, {
+  group = augroup("checktime"),
+  callback = function()
+    if vim.o.buftype ~= "nofile" then
+      vim.cmd("checktime")
+    end
+  end,
+})
+
+-- go to last loc when opening a buffer
+vim.api.nvim_create_autocmd("BufReadPost", {
+  group = augroup("last_loc"),
+  callback = function(event)
+    local exclude = { "gitcommit", "gitrebase" }
+    local buf = event.buf
+    if vim.tbl_contains(exclude, vim.bo[buf].filetype) or vim.b[buf].cursor_did_restore then
+      return
+    end
+    vim.b[buf].cursor_did_restore = true
+    local mark = vim.api.nvim_buf_get_mark(buf, '"')
+    local lcount = vim.api.nvim_buf_line_count(buf)
+    if mark[1] > 0 and mark[1] <= lcount then
+      pcall(vim.api.nvim_win_set_cursor, 0, mark)
+    end
+  end,
+})
+
+-- close some filetypes with <q>
+vim.api.nvim_create_autocmd("FileType", {
+  group = augroup("close_with_q"),
+  pattern = { "checkhealth", "help", "notify", "qf" },
+  callback = function(event)
+    vim.bo[event.buf].buflisted = false
+    vim.schedule(function()
+      vim.keymap.set("n", "q", function()
+        pcall(vim.api.nvim_buf_delete, event.buf, { force = true })
+      end, {
+        buffer = event.buf,
+        silent = true,
+        desc = "Quit buffer",
+      })
+    end)
+  end,
+})
+
 -- [[ plugins ]]
 vim.pack.add({
   "https://github.com/BirdeeHub/lze",
   "https://github.com/nvim-mini/mini.nvim",
-  { src = "https://github.com/catppuccin/nvim",                 data = { opt = true }, name = "catppuccin" },
+  { src = "https://github.com/catppuccin/nvim",                 name = "catppuccin" },
   { src = "https://github.com/neovim/nvim-lspconfig",           data = { opt = true } },
   { src = "https://github.com/nvim-treesitter/nvim-treesitter", data = { opt = true } },
   { src = "https://github.com/folke/lazydev.nvim",              data = { opt = true } },
-  { src = "https://github.com/folke/lazydev.nvim",              data = { opt = true } },
-  { src = "https://github.com/saghen/blink.cmp",                data = { opt = true }, version = vim.version.range('1.*') }
+  { src = "https://github.com/saghen/blink.cmp",                data = { opt = true }, version = vim.version.range('1.*') },
+  { src = "https://github.com/j-hui/fidget.nvim",               data = { opt = true } }
 }, {
   load = function(p)
     if not (p.spec.data or {}).opt then
@@ -174,9 +226,9 @@ vim.pack.add({
 require("lze").load {
   {
     "catppuccin",
-    colorscheme = "catppuccin",
     after = function()
       require("catppuccin").setup { background = { dark = "macchiato" } }
+      vim.cmd.colorscheme "catppuccin"
     end
   },
   {
@@ -211,14 +263,22 @@ require("lze").load {
       vim.lsp.enable({ 'lua_ls' })
       require("vim._extui").enable({})
 
+      local group = augroup("lsp")
       autocmd("LspAttach", {
-        group = augroup("lsp"),
-        callback = function(ev)
-          local client = assert(vim.lsp.get_client_by_id(ev.data.client_id))
+        group = group,
+        callback = function(args)
+          local client = assert(vim.lsp.get_client_by_id(args.data.client_id))
           local methods = vim.lsp.protocol.Methods
-          -- if client:supports_method(methods.textDocument_completion) then
-          --   vim.lsp.completion.enable(true, client.id, ev.buf, { autotrigger = false })
-          -- end
+          if not client:supports_method(methods.textDocument_willSaveWaitUntil)
+              and client:supports_method(methods.textDocument_formatting) then
+            autocmd('BufWritePre', {
+              group = group,
+              buffer = args.buf,
+              callback = function()
+                vim.lsp.buf.format({ bufnr = args.buf, id = client.id, timeout_ms = 1000 })
+              end,
+            })
+          end
         end
       })
     end
@@ -253,10 +313,10 @@ require("lze").load {
     "mini.nvim3",
     load = function() end,
     keys = {
-      { '<Leader>ff', '<Cmd>Pick files<CR>',           { desc = 'Find Files'        } },
-      { '<Leader>fb', '<Cmd>Pick buffers<CR>',         { desc = 'Find Buffers'      } },
-      { '<Leader>fg', '<Cmd>Pick grep_live<CR>',       { desc = 'Find (live Grep)'  } },
-      { '<Leader>fm', '<Cmd>Pick marks<CR>',           { desc = 'Find Marks'        } },
+      { '<Leader>ff', '<Cmd>Pick files<CR>',           { desc = 'Find Files' } },
+      { '<Leader>fb', '<Cmd>Pick buffers<CR>',         { desc = 'Find Buffers' } },
+      { '<Leader>fg', '<Cmd>Pick grep_live<CR>',       { desc = 'Find (live Grep)' } },
+      { '<Leader>fm', '<Cmd>Pick marks<CR>',           { desc = 'Find Marks' } },
       { '<Leader>e',  '<Cmd>lua MiniFiles.open()<CR>', { desc = "Explore directory" } },
     },
     after = function()
@@ -276,6 +336,9 @@ require("lze").load {
     event = { "InsertEnter", "LspAttach", "CmdlineEnter" },
     after = function() require('blink.cmp').setup() end,
   },
+  {
+    "fidget.nvim",
+    event = "LspAttach",
+    after = function() require("fidget").setup {} end,
+  },
 }
-
-vim.cmd.colorscheme "catppuccin"

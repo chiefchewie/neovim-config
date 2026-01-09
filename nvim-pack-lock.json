@@ -9,6 +9,10 @@
       "rev": "beaf41a30c26fd7d6c386d383155cbd65dd554cd",
       "src": "https://github.com/catppuccin/nvim"
     },
+    "fidget.nvim": {
+      "rev": "64463022a1f2ff1318ab22a2ea4125ed9313a483",
+      "src": "https://github.com/j-hui/fidget.nvim"
+    },
     "lazydev.nvim": {
       "rev": "5231c62aa83c2f8dc8e7ba957aa77098cda1257d",
       "src": "https://github.com/folke/lazydev.nvim"
