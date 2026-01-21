@@ -136,7 +136,7 @@ autocmd("TextYankPost", {
 })
 
 -- a shada file per .git repo
-autocmd("BufReadPre", {
+autocmd({ "DirChanged", "VimEnter" }, {
   group = augroup("project_shada"),
   callback = function()
     local data_dir = vim.fn.stdpath('data')
@@ -205,6 +205,36 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+-- Set focused directory as current working directory
+local set_cwd = function()
+  local path = (MiniFiles.get_fs_entry() or {}).path
+  if path == nil then return vim.notify('Cursor is not on valid entry') end
+  local dir = vim.fs.dirname(path)
+  vim.fn.chdir(dir)
+  vim.notify('Set cwd to: ' .. dir)
+end
+
+-- Yank in register full path of entry under cursor
+local yank_path = function()
+  local path = (MiniFiles.get_fs_entry() or {}).path
+  if path == nil then return vim.notify('Cursor is not on valid entry') end
+  vim.fn.setreg(vim.v.register, path)
+  vim.notify('Yanked path: ' .. path)
+end
+
+-- Open path with system default handler (useful for non-text files)
+local ui_open = function() vim.ui.open(MiniFiles.get_fs_entry().path) end
+
+autocmd('User', {
+  pattern = 'MiniFilesBufferCreate',
+  callback = function(args)
+    local b = args.data.buf_id
+    vim.keymap.set('n', 'g~', set_cwd, { buffer = b, desc = 'Set cwd' })
+    vim.keymap.set('n', 'gX', ui_open, { buffer = b, desc = 'OS open' })
+    vim.keymap.set('n', 'gy', yank_path, { buffer = b, desc = 'Yank path' })
+  end,
+})
+
 -- [[ plugins ]]
 vim.pack.add({
   "https://github.com/BirdeeHub/lze",
@@ -214,7 +244,8 @@ vim.pack.add({
   { src = "https://github.com/neovim/nvim-lspconfig",           data = { opt = true } },
   { src = "https://github.com/folke/lazydev.nvim",              data = { opt = true } },
   { src = "https://github.com/saghen/blink.cmp",                data = { opt = true }, version = vim.version.range('1.*') },
-  { src = "https://github.com/j-hui/fidget.nvim",               data = { opt = true } }
+  { src = "https://github.com/j-hui/fidget.nvim",               data = { opt = true } },
+  { src = "https://github.com/stevearc/conform.nvim",           data = { opt = true } }
 }, {
   load = function(p)
     if not (p.spec.data or {}).opt then
@@ -262,26 +293,6 @@ require("lze").load {
     event = "FileType",
     after = function()
       vim.lsp.enable({ 'lua_ls', 'basedpyright' })
-      require("vim._extui").enable({})
-
-      local group = augroup("lsp")
-      autocmd("LspAttach", {
-        group = group,
-        callback = function(args)
-          local client = assert(vim.lsp.get_client_by_id(args.data.client_id))
-          local methods = vim.lsp.protocol.Methods
-          if not client:supports_method(methods.textDocument_willSaveWaitUntil)
-              and client:supports_method(methods.textDocument_formatting) then
-            autocmd('BufWritePre', {
-              group = group,
-              buffer = args.buf,
-              callback = function()
-                vim.lsp.buf.format({ bufnr = args.buf, id = client.id, timeout_ms = 1000 })
-              end,
-            })
-          end
-        end
-      })
     end
   },
   {
@@ -342,4 +353,19 @@ require("lze").load {
     event = "LspAttach",
     after = function() require("fidget").setup {} end,
   },
+  {
+    "conform.nvim",
+    event = { "BufReadPost", "BufNewFile" },
+    after = function()
+      require("conform").setup({
+        format_on_save = {
+          timeout_ms = 500,
+          lsp_format = "fallback"
+        },
+        formatters_by_ft = {
+          python = { "isort", "black" },
+        },
+      })
+    end
+  }
 }
