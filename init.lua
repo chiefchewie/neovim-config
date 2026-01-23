@@ -358,12 +358,11 @@ require("lze").load {
     event = { "BufReadPost", "BufNewFile" },
     after = function()
       require("conform").setup({
-        format_on_save = {
-          timeout_ms = 500,
+        format_after_save = {
           lsp_format = "fallback"
         },
         formatters_by_ft = {
-          python = { "isort", "black" },
+          python = { "isort", "ruff_format" },
         },
       })
     end

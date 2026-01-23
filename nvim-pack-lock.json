@@ -14,7 +14,7 @@
       "src": "https://github.com/stevearc/conform.nvim"
     },
     "fidget.nvim": {
-      "rev": "64463022a1f2ff1318ab22a2ea4125ed9313a483",
+      "rev": "7fa433a83118a70fe24c1ce88d5f0bd3453c0970",
       "src": "https://github.com/j-hui/fidget.nvim"
     },
     "lazydev.nvim": {
@@ -22,19 +22,19 @@
       "src": "https://github.com/folke/lazydev.nvim"
     },
     "lze": {
-      "rev": "e48d0d4fcf904e64aee60c7acf6df47ae1275dfe",
+      "rev": "0b2007d012a8a93320d6cc380d3f4d45e46e0f56",
       "src": "https://github.com/BirdeeHub/lze"
     },
     "mini.nvim": {
-      "rev": "29b9e13f891f9c83f44ff5bf44d22daa1af1dc71",
+      "rev": "9b935c218ddba02e5dc75c94f90143bce1f7c646",
       "src": "https://github.com/nvim-mini/mini.nvim"
     },
     "nvim-lspconfig": {
-      "rev": "92ee7d42320edfbb81f3cad851314ab197fa324a",
+      "rev": "419b082102fa813739588dd82e19a8b6b2442855",
       "src": "https://github.com/neovim/nvim-lspconfig"
     },
     "nvim-treesitter": {
-      "rev": "2ba5ec184609a96b513bf4c53a20512d64e27f39",
+      "rev": "511e5ccf404f8a96ee31866b079fca033a8a7c4e",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter"
     }
   }
