@@ -2,7 +2,7 @@ local now, later = MiniDeps.now, MiniDeps.later
 local now_if_args = vim.fn.argc(-1) > 0 and MiniDeps.now or MiniDeps.later
 
 -- Step one ===================================================================
-now(function() vim.cmd('colorscheme miniwinter') end)
+now(function() require('mini.icons').setup() end)
 now(function() require('mini.notify').setup() end)
 now(function() require('mini.statusline').setup() end)
 now(function() require('mini.tabline').setup() end)
