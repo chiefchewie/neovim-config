@@ -1,17 +1,13 @@
--- [[ general ]]
-vim.cmd('filetype plugin indent on')
+-- [[ options ]]
 vim.g.have_nerd_font          = true
 vim.g.mapleader               = ' '                              -- Use `<Space>` as <Leader> key
 vim.o.mouse                   = 'a'                              -- Enable mouse
-vim.o.switchbuf               = 'usetab'                         -- Use already opened buffers when switching
 vim.o.undofile                = true                             -- Enable persistent undo
 vim.o.shada                   = "'100,<50,s10,:1000,/100,@100,h" -- Limit ShaDa file (for startup)
 
--- ui related
 vim.o.number                  = true
 vim.o.relativenumber          = true
 
-vim.o.wrap                    = false     -- Don't visually wrap lines (toggle with \w)
 vim.o.breakindent             = true      -- Indent wrapped lines to match line start
 vim.o.linebreak               = true      -- Wrap lines at 'breakat' (if 'wrap' is set)
 vim.o.breakindentopt          = 'list:-1' -- Add padding for lists (if 'wrap' is set)
@@ -29,12 +25,6 @@ vim.o.list                    = true
 vim.o.listchars               = 'trail:·,nbsp:␣,tab:» ,extends:…,precedes:…'
 vim.o.fillchars               = 'eob: ,fold:╌'
 
-vim.o.foldlevel               = 10       -- Fold nothing by default; set to 0 or 1 to fold
-vim.o.foldmethod              = 'indent' -- Fold based on indent level
-vim.o.foldnestmax             = 10       -- Limit number of fold levels
-vim.o.foldtext                = ''       -- Show text under fold with its highlighting
-
--- editing
 vim.o.autoindent              = true     -- Use auto indent
 vim.o.expandtab               = true     -- Convert tabs to spaces
 vim.o.smartindent             = true     -- Make indenting smart
@@ -48,19 +38,16 @@ vim.o.smartcase               = true     -- Respect case if search pattern has u
 vim.o.virtualedit             = 'block'  -- Allow going past end of line in blockwise mode
 vim.o.formatoptions           = 'rqnl1j' -- Improve comment editing
 
--- Providers
 vim.g.loaded_python3_provider = 0
 vim.g.loaded_ruby_provider    = 0
 vim.g.loaded_perl_provider    = 0
 vim.g.loaded_node_provider    = 0
 
 
--- [[ general keymaps ]]
+-- [[ keybinds ]]
 -- powerful <esc>
 vim.keymap.set({ 'i', 's', 'n' }, '<esc>', function()
-  if vim.snippet.active() then
-    vim.snippet.stop()
-  end
+  if vim.snippet.active() then vim.snippet.stop() end
   vim.cmd('noh')
   return '<esc>'
 end, { desc = 'Escape, clear hlsearch, and stop snippets', expr = true })
@@ -78,7 +65,6 @@ end, { desc = 'Toggle diagnostic [Q]uickfix list' })
 -- enter normal mode with <esc><esc> while in term mode
 vim.keymap.set('t', '<esc><esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
--- see `:help wincmd` for a list of all window commands
 vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
@@ -100,7 +86,8 @@ vim.keymap.set({ 'n', 'x' }, '<leader>y', '"+y', { desc = 'Yank to system clipbo
 vim.keymap.set({ 'n', 'x' }, '<leader>p', '"+p', { desc = 'Paste from system clipboard after cursor' })
 vim.keymap.set({ 'n', 'x' }, '<leader>P', '"+P', { desc = 'Paste from system clipboard before cursor' })
 
--- [[ general autocommands ]]
+
+-- [[ auto commands ]]
 local augroup = function(name)
   return vim.api.nvim_create_augroup("config_" .. name, { clear = true })
 end
@@ -159,212 +146,78 @@ autocmd({ "DirChanged", "VimEnter" }, {
   end
 })
 
--- check if we need to reload the file when it changed
-autocmd({ "FocusGained", "TermClose", "TermLeave" }, {
-  group = augroup("checktime"),
-  callback = function()
-    if vim.o.buftype ~= "nofile" then
-      vim.cmd("checktime")
-    end
-  end,
-})
-
--- go to last loc when opening a buffer
-vim.api.nvim_create_autocmd("BufReadPost", {
-  group = augroup("last_loc"),
-  callback = function(event)
-    local exclude = { "gitcommit", "gitrebase" }
-    local buf = event.buf
-    if vim.tbl_contains(exclude, vim.bo[buf].filetype) or vim.b[buf].cursor_did_restore then
-      return
-    end
-    vim.b[buf].cursor_did_restore = true
-    local mark = vim.api.nvim_buf_get_mark(buf, '"')
-    local lcount = vim.api.nvim_buf_line_count(buf)
-    if mark[1] > 0 and mark[1] <= lcount then
-      pcall(vim.api.nvim_win_set_cursor, 0, mark)
-    end
-  end,
-})
-
--- close some filetypes with <q>
-vim.api.nvim_create_autocmd("FileType", {
-  group = augroup("close_with_q"),
-  pattern = { "checkhealth", "help", "notify", "qf" },
-  callback = function(event)
-    vim.bo[event.buf].buflisted = false
-    vim.schedule(function()
-      vim.keymap.set("n", "q", function()
-        pcall(vim.api.nvim_buf_delete, event.buf, { force = true })
-      end, {
-        buffer = event.buf,
-        silent = true,
-        desc = "Quit buffer",
-      })
-    end)
-  end,
-})
-
--- Set focused directory as current working directory
-local set_cwd = function()
-  local path = (MiniFiles.get_fs_entry() or {}).path
-  if path == nil then return vim.notify('Cursor is not on valid entry') end
-  local dir = vim.fs.dirname(path)
-  vim.fn.chdir(dir)
-  vim.notify('Set cwd to: ' .. dir)
-end
-
--- Yank in register full path of entry under cursor
-local yank_path = function()
-  local path = (MiniFiles.get_fs_entry() or {}).path
-  if path == nil then return vim.notify('Cursor is not on valid entry') end
-  vim.fn.setreg(vim.v.register, path)
-  vim.notify('Yanked path: ' .. path)
-end
-
--- Open path with system default handler (useful for non-text files)
-local ui_open = function() vim.ui.open(MiniFiles.get_fs_entry().path) end
-
-autocmd('User', {
-  pattern = 'MiniFilesBufferCreate',
-  callback = function(args)
-    local b = args.data.buf_id
-    vim.keymap.set('n', 'g~', set_cwd, { buffer = b, desc = 'Set cwd' })
-    vim.keymap.set('n', 'gX', ui_open, { buffer = b, desc = 'OS open' })
-    vim.keymap.set('n', 'gy', yank_path, { buffer = b, desc = 'Yank path' })
-  end,
-})
-
 -- [[ plugins ]]
-vim.pack.add({
-  "https://github.com/BirdeeHub/lze",
-  "https://github.com/nvim-mini/mini.nvim",
-  { src = "https://github.com/catppuccin/nvim",                 name = "catppuccin" },
-  { src = "https://github.com/nvim-treesitter/nvim-treesitter", data = { opt = true } },
-  { src = "https://github.com/neovim/nvim-lspconfig",           data = { opt = true } },
-  { src = "https://github.com/folke/lazydev.nvim",              data = { opt = true } },
-  { src = "https://github.com/saghen/blink.cmp",                data = { opt = true }, version = vim.version.range('1.*') },
-  { src = "https://github.com/j-hui/fidget.nvim",               data = { opt = true } },
-  { src = "https://github.com/stevearc/conform.nvim",           data = { opt = true } }
-}, {
-  load = function(p)
-    if not (p.spec.data or {}).opt then
-      vim.cmd.packadd(p.spec.name)
-    end
-  end,
-  confirm = false
-})
+vim.pack.add({ "https://github.com/nvim-mini/mini.nvim" })
 
-require("lze").load {
-  {
-    "catppuccin",
-    after = function()
-      require("catppuccin").setup { background = { dark = "macchiato" } }
-      vim.cmd.colorscheme "catppuccin"
-    end
-  },
-  {
-    "nvim-treesitter",
-    event = "FileType",
-    after = function()
-      local group = augroup("treesitter")
-      autocmd("FileType", {
-        group = group,
-        callback = function(args)
-          local bufnr = args.buf
-          local ft = vim.bo[bufnr].filetype
-          local lang = vim.treesitter.language.get_lang(ft)
-          pcall(vim.treesitter.start, bufnr, lang)
-        end
-      })
-      autocmd("PackChanged", {
-        group = group,
-        callback = function(ev)
-          local name, kind = ev.data.spec.name, ev.data.kind
-          if name == "nvim-treesitter" and (kind == "install" or kind == "update") then
-            vim.cmd "TSUpdate"
-          end
-        end
-      })
-    end
-  },
-  {
-    "nvim-lspconfig",
-    event = "FileType",
-    after = function()
-      vim.lsp.enable({ 'lua_ls', 'basedpyright' })
-    end
-  },
-  {
-    "lazydev.nvim",
-    ft = "lua",
-    after = function() require("lazydev").setup() end
-  },
-  {
-    "mini.nvim1",
-    load = function() end,
-    event = "VimEnter",
-    after = function()
-      require("mini.icons").setup()
-      require("mini.statusline").setup()
-    end
-  },
-  {
-    "mini.nvim2",
-    load = function() end,
-    event = { "BufReadPost", "BufNewFile" },
-    after = function()
-      require('mini.ai').setup()
-      require('mini.move').setup()
-      require('mini.surround').setup()
-      require('mini.git').setup()
-      require('mini.diff').setup()
-    end
-  },
-  {
-    "mini.nvim3",
-    load = function() end,
-    keys = {
-      { '<Leader>ff', '<Cmd>Pick files<CR>',           { desc = 'Find Files' } },
-      { '<Leader>fb', '<Cmd>Pick buffers<CR>',         { desc = 'Find Buffers' } },
-      { '<Leader>fg', '<Cmd>Pick grep_live<CR>',       { desc = 'Find (live Grep)' } },
-      { '<Leader>fm', '<Cmd>Pick marks<CR>',           { desc = 'Find Marks' } },
-      { '<Leader>e',  '<Cmd>lua MiniFiles.open()<CR>', { desc = "Explore directory" } },
+require('mini.deps').setup()
+
+local add, now, later = MiniDeps.add, MiniDeps.now, MiniDeps.later
+local now_if_args = vim.fn.argc(-1) > 0 and MiniDeps.now or MiniDeps.later
+
+now(function() require('mini.icons').setup() end)
+now(function() require('mini.notify').setup() end)
+now(function() require('mini.statusline').setup() end)
+now(function() require('mini.tabline').setup() end)
+now_if_args(function()
+  require('mini.files').setup({ windows = { preview = true } })
+end)
+now_if_args(function()
+  require('mini.misc').setup()
+  MiniMisc.setup_auto_root()
+  MiniMisc.setup_restore_cursor()
+end)
+later(function() require('mini.extra').setup() end)
+later(function() require('mini.diff').setup() end)
+later(function() require('mini.git').setup() end)
+later(function() require('mini.move').setup() end)
+later(function() require('mini.pick').setup() end)
+later(function() require('mini.splitjoin').setup() end)
+later(function() require('mini.surround').setup() end)
+
+now(function()
+  add({
+    source = 'catppuccin/nvim',
+    name = 'catppuccin'
+  })
+  vim.cmd('color catppuccin')
+end)
+
+now_if_args(function()
+  add({
+    source = 'nvim-treesitter/nvim-treesitter',
+    hooks = { post_checkout = function() vim.cmd('TSUpdate') end },
+  })
+  add('nvim-treesitter/nvim-treesitter-textobjects')
+end)
+
+now_if_args(function()
+  add('neovim/nvim-lspconfig')
+  vim.lsp.enable({
+    'basedpyright',
+    'lua_ls',
+    'clangd'
+  })
+end)
+
+now_if_args(function() 
+  add({
+    source = 'saghen/blink.cmp',
+    depends = { 'rafamadriz/friendly-snippets' },
+    checkout = "v1.9.1"
+  })
+  require('blink.cmp').setup()
+end)
+
+later(function()
+  add('stevearc/conform.nvim')
+  require('conform').setup({
+    default_format_opts = {
+      lsp_format = 'fallback',
     },
-    after = function()
-      require("mini.pick").setup()
-      require("mini.files").setup()
-      require("mini.extra").setup()
-    end
-  },
-  {
-    "mini.pairs",
-    load = function() end,
-    event = "InsertEnter",
-    after = function() require("mini.pairs").setup() end
-  },
-  {
-    "blink.cmp",
-    event = { "InsertEnter", "LspAttach", "CmdlineEnter" },
-    after = function() require('blink.cmp').setup() end,
-  },
-  {
-    "fidget.nvim",
-    event = "LspAttach",
-    after = function() require("fidget").setup {} end,
-  },
-  {
-    "conform.nvim",
-    event = { "BufReadPost", "BufNewFile" },
-    after = function()
-      require("conform").setup({
-        format_after_save = {
-          lsp_format = "fallback"
-        },
-        formatters_by_ft = {
-          python = { "isort", "ruff_format" },
-        },
-      })
-    end
-  }
-}
+    formatters_by_ft = {
+      python = { "isort", "ruff_format" },
+    },
+  })
+end)
+
+later(function() add('rafamadriz/friendly-snippets') end)
